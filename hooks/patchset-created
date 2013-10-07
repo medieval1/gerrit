@@ -1,0 +1,54 @@
+#!/usr/bin/python
+
+import os
+import sys
+import argparse
+import hipchat
+from git import *
+
+def log_args():
+  '''
+    This function will write to the logfile all the details passed
+    to this gerrit hook.
+  '''
+  fo = open (os.environ['GERRIT_SITE'] + '/logs/patchset-created.log', "a")
+  data = "Args: " + str(sys.argv) + "\n"
+  fo.write (data)
+  fo.flush()
+  fo.close()
+
+def parse_args():
+  '''
+    Parse the expected gerrit hook args
+  '''
+  parser = argparse.ArgumentParser()
+  parser.add_argument ("--change", help = "change ID of patch set")
+  parser.add_argument ("--is-draft", help = "Is this a draft patch set?")
+  parser.add_argument ("--change-url", help = "URL of reivew")
+  parser.add_argument ("--project", help = "Gerrit project of patch set")
+  parser.add_argument ("--branch", help = "Git branch of patch set")
+  parser.add_argument ("--uploader", help = "Entity of patch set submitter")
+  parser.add_argument ("--commit", help = "Git commit SHA1")
+  parser.add_argument ("--patchset", help = "Patchset number")
+  return parser.parse_args()
+
+def post_hipchat(args, msg):
+  hipster = hipchat.HipChat (token='YOUR TOKEN HERE')
+  post = "Patchset Created:\n" + \
+         "  Change URL: " + args.change_url + "\n" + \
+         "  Project: " + args.project + "\n" + \
+         "  Uploader: " + args.uploader + "\n" + \
+         "  Commit SHA1: " + args.commit + "\n" + msg + "\n"
+
+  print hipster.message_room ('ROOM', 'GERRIT', post)
+
+def get_commit_msg(args):
+  repo = Repo (repo = Repo (os.environ['GIT_DIR'])
+  commit = repo.commit(args.commit)
+  return commit.message[0:commit.message.find("\n")]
+
+if __name__ == '__main__':
+  log_args()
+  args = parse_args()
+  msg = get_commit_msg(args)
+  post_hipchat(args, msg)
