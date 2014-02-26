@@ -19,7 +19,9 @@ Edit the config file to add your HipChat API Token and then configure the projec
 
 Next, configure gerrit to use the hooks. Edit GERRIT_SITE/etc/gerrit.config and add the [hooks] section:
 
+'''
   [hooks]
         patchsetCreatedHook = patchset-created
+'''
 
 Restart gerrit and you're good to go!
