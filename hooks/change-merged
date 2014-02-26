@@ -12,7 +12,7 @@ def log_args():
     This function will write to the logfile all the details passed
     to this gerrit hook.
   """
-  fo = open (os.environ['GERRIT_SITE'] + '/logs/patchset-created.log', "a")
+  fo = open (os.environ['GERRIT_SITE'] + '/logs/change-merged.log', "a")
   data = "Args: " + str(sys.argv) + "\n"
   fo.write (data)
   fo.flush()
@@ -24,13 +24,12 @@ def parse_args():
   """
   parser = argparse.ArgumentParser()
   parser.add_argument ("--change", help = "change ID of patch set")
-  parser.add_argument ("--is-draft", help = "Is this a draft patch set?")
   parser.add_argument ("--change-url", help = "URL of reivew")
   parser.add_argument ("--project", help = "Gerrit project of patch set")
   parser.add_argument ("--branch", help = "Git branch of patch set")
-  parser.add_argument ("--uploader", help = "Entity of patch set submitter")
+  parser.add_argument ("--topic", help = "Git Topic of branch of patch set")
+  parser.add_argument ("--submitter", help = "Entity of patch set submitter")
   parser.add_argument ("--commit", help = "Git commit SHA1")
-  parser.add_argument ("--patchset", help = "Patchset number")
   return parser.parse_args()
 
 def post_hipchat(tkn, room, msg):
@@ -43,10 +42,10 @@ def get_commit_msg(args):
   return commit.message[0:commit.message.find("\n")]
 
 def format_msg(args, msg):
-  post = "Patchset Created:\n" + \
+  post = "Change Merged:\n" + \
          "  Change URL: " + args.change_url + "\n" + \
          "  Project: " + args.project + "\n" + \
-         "  Uploader: " + args.uploader + "\n" + \
+         "  Submitter:: " + args.submitter + "\n" + \
          "  Commit SHA1: " + args.commit + "\n" + msg + "\n"
   return post
 
@@ -79,4 +78,3 @@ if __name__ == '__main__':
   msg = get_commit_msg(args)
   msg = format_msg (args, msg)
   post_hipchat(token, room, msg)
-
